@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Back-of-the-Envelope Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    .calculator {
+      background: white;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .output {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Back-of-the-Envelope Calculators</h1>
+
+  <div class="calculator">
+    <h2>Requests per Second</h2>
+    <label for="users">Total Users:</label>
+    <input type="number" id="users" />
+    <label for="reqs">Avg Requests/User/Day:</label>
+    <input type="number" id="reqs" />
+    <button onclick="calcRPS()">Calculate</button>
+    <div class="output" id="rpsOutput"></div>
+  </div>
+
+  <div class="calculator">
+    <h2>Data Storage</h2>
+    <label for="storageUsers">Users:</label>
+    <input type="number" id="storageUsers" />
+    <label for="items">Items/User:</label>
+    <input type="number" id="items" />
+    <label for="size">Item Size (MB):</label>
+    <input type="number" id="size" />
+    <button onclick="calcStorage()">Calculate</button>
+    <div class="output" id="storageOutput"></div>
+  </div>
+
+  <div class="calculator">
+    <h2>Server Count</h2>
+    <label for="totalRps">Total RPS Required:</label>
+    <input type="number" id="totalRps" />
+    <label for="rpsPerServer">RPS per Server:</label>
+    <input type="number" id="rpsPerServer" />
+    <button onclick="calcServers()">Calculate</button>
+    <div class="output" id="serverOutput"></div>
+  </div>
+
+  <div class="calculator">
+    <h2>Bandwidth Estimation</h2>
+    <label for="views">Content Views per Day:</label>
+    <input type="number" id="views" />
+    <label for="contentSize">Content Size (MB):</label>
+    <input type="number" id="contentSize" />
+    <button onclick="calcBandwidth()">Calculate</button>
+    <div class="output" id="bandwidthOutput"></div>
+  </div>
+
+  <div class="calculator">
+    <h2>Queue Backlog</h2>
+    <label for="ingest">Ingestion Rate (events/min):</label>
+    <input type="number" id="ingest" />
+    <label for="process">Processing Rate (events/min):</label>
+    <input type="number" id="process" />
+    <button onclick="calcBacklog()">Calculate</button>
+    <div class="output" id="backlogOutput"></div>
+  </div>
+
+  <div class="calculator">
+    <h2>Latency Budget</h2>
+    <label for="frontendLatency">Frontend (ms):</label>
+    <input type="number" id="frontendLatency" />
+    <label for="backendLatency">Backend (ms):</label>
+    <input type="number" id="backendLatency" />
+    <label for="dbLatency">Database (ms):</label>
+    <input type="number" id="dbLatency" />
+    <button onclick="calcLatency()">Calculate</button>
+    <div class="output" id="latencyOutput"></div>
+  </div>
+
+  <script>
+    function calcRPS() {
+      const users = Number(document.getElementById('users').value);
+      const reqs = Number(document.getElementById('reqs').value);
+      const totalPerDay = users * reqs;
+      const rps = totalPerDay / 86400;
+      document.getElementById('rpsOutput').innerText = `Total Requests/Day: ${totalPerDay.toLocaleString()} | Approx RPS: ${rps.toFixed(2)}`;
+    }
+
+    function calcStorage() {
+      const users = Number(document.getElementById('storageUsers').value);
+      const items = Number(document.getElementById('items').value);
+      const size = Number(document.getElementById('size').value);
+      const total = users * items * size;
+      document.getElementById('storageOutput').innerText = `Estimated Total Storage: ${total.toLocaleString()} MB ≈ ${(total / 1024).toFixed(2)} GB ≈ ${(total / (1024 * 1024)).toFixed(2)} TB`;
+    }
+
+    function calcServers() {
+      const totalRps = Number(document.getElementById('totalRps').value);
+      const rpsPerServer = Number(document.getElementById('rpsPerServer').value);
+      const servers = Math.ceil(totalRps / rpsPerServer);
+      document.getElementById('serverOutput').innerText = `Minimum Servers Required: ${servers}`;
+    }
+
+    function calcBandwidth() {
+      const views = Number(document.getElementById('views').value);
+      const contentSize = Number(document.getElementById('contentSize').value);
+      const totalMb = views * contentSize;
+      const gb = totalMb / 1024;
+      const tb = gb / 1024;
+      document.getElementById('bandwidthOutput').innerText = `Daily Bandwidth: ${totalMb.toLocaleString()} MB ≈ ${gb.toFixed(2)} GB ≈ ${tb.toFixed(2)} TB`;
+    }
+
+    function calcBacklog() {
+      const ingest = Number(document.getElementById('ingest').value);
+      const process = Number(document.getElementById('process').value);
+      const backlogPerMin = ingest - process;
+      const hourlyBacklog = backlogPerMin * 60;
+      const dailyBacklog = backlogPerMin * 60 * 24;
+      document.getElementById('backlogOutput').innerText = backlogPerMin <= 0
+        ? 'No backlog. System is keeping up.'
+        : `Backlog Rate: ${backlogPerMin} events/min ≈ ${hourlyBacklog} events/hr ≈ ${dailyBacklog} events/day`;
+    }
+
+    function calcLatency() {
+      const frontend = Number(document.getElementById('frontendLatency').value);
+      const backend = Number(document.getElementById('backendLatency').value);
+      const db = Number(document.getElementById('dbLatency').value);
+      const total = frontend + backend + db;
+      document.getElementById('latencyOutput').innerText = `Total Latency Budget: ${total} ms`;
+    }
+  </script>
+</body>
+</html>
